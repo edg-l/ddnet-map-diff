@@ -2,7 +2,10 @@ use clap::Parser;
 use eyre::Result;
 use owo_colors::OwoColorize;
 use std::path::PathBuf;
-use twmap::{GameLayer, Group, Layer, Load, TilemapLayer, TilesLayer, TwMap};
+use twmap::{
+    AnyTile, FrontLayer, GameLayer, Group, Layer, Load, SpeedupLayer, SwitchLayer, TeleLayer,
+    TilemapLayer, TilesLayer, TuneLayer, TwMap,
+};
 use vek::Rgba;
 
 #[derive(Parser)]
@@ -48,14 +51,66 @@ pub fn run_cli() -> Result<()> {
         .find_physics_layer()
         .expect("couldn't find game layer");
 
-    let tiles_old = map_old_game.tiles().unwrap_ref();
-    let tiles_new = map_new_game.tiles().unwrap_ref();
+    let game_diff_group = diff_layer(map_old_game, map_new_game, "Game")?;
+    result.groups.push(game_diff_group);
+
+    if let (Some(map_old_layer), Some(map_new_layer)) = (
+        map_old.find_physics_layer::<FrontLayer>(),
+        map_new.find_physics_layer::<FrontLayer>(),
+    ) {
+        let diff_group = diff_layer(map_old_layer, map_new_layer, "Front")?;
+        result.groups.push(diff_group);
+    }
+
+    if let (Some(map_old_layer), Some(map_new_layer)) = (
+        map_old.find_physics_layer::<TeleLayer>(),
+        map_new.find_physics_layer::<TeleLayer>(),
+    ) {
+        let diff_group = diff_layer(map_old_layer, map_new_layer, "Tele")?;
+        result.groups.push(diff_group);
+    }
+
+    if let (Some(map_old_layer), Some(map_new_layer)) = (
+        map_old.find_physics_layer::<SwitchLayer>(),
+        map_new.find_physics_layer::<SwitchLayer>(),
+    ) {
+        let diff_group = diff_layer(map_old_layer, map_new_layer, "Switch")?;
+        result.groups.push(diff_group);
+    }
+
+    if let (Some(map_old_layer), Some(map_new_layer)) = (
+        map_old.find_physics_layer::<SpeedupLayer>(),
+        map_new.find_physics_layer::<SpeedupLayer>(),
+    ) {
+        let diff_group = diff_layer(map_old_layer, map_new_layer, "Speedup")?;
+        result.groups.push(diff_group);
+    }
+
+    if let (Some(map_old_layer), Some(map_new_layer)) = (
+        map_old.find_physics_layer::<TuneLayer>(),
+        map_new.find_physics_layer::<TuneLayer>(),
+    ) {
+        let diff_group = diff_layer(map_old_layer, map_new_layer, "Tune")?;
+        result.groups.push(diff_group);
+    }
+
+    result.save_file(&result_path)?;
+
+    Ok(())
+}
+
+fn diff_layer<T>(layer_old: &T, layer_new: &T, name: &str) -> Result<Group>
+where
+    T: TilemapLayer,
+{
+    let tiles_old = layer_old.tiles().unwrap_ref();
+    let tiles_new = layer_new.tiles().unwrap_ref();
 
     let width = tiles_old.dim().1.min(tiles_new.dim().1);
     let height = tiles_old.dim().0.min(tiles_new.dim().0);
 
     let mut diff_group = Group {
-        name: "Difference".to_string(),
+        name: format!("{} Diff", name),
         ..Default::default()
     };
 
@@ -81,8 +136,8 @@ pub fn run_cli() -> Result<()> {
 
     for x in 0..width {
         for y in 0..height {
-            let index_old = tiles_old[(y, x)].id;
-            let index_new = tiles_new[(y, x)].id;
+            let index_old = tiles_old[(y, x)].id();
+            let index_new = tiles_new[(y, x)].id();
 
             if index_old == 0 && index_new != 0 {
                 tiles_add[(y, x)].id = 1;
@@ -105,17 +160,14 @@ pub fn run_cli() -> Result<()> {
     diff_group.layers.push(layer_del);
     diff_group.layers.push(layer_mod);
 
-    result.groups.push(diff_group);
-
-    result.save_file(&result_path)?;
-
-    println!("{}: {}", "Additions".green(), additions);
-    println!("{}: {}", "Deletions".red(), deletions);
+    println!("Summary of changes to layer '{}':", name.purple());
+    println!("- {}: {}", "Additions".green(), additions);
+    println!("- {}: {}", "Deletions".red(), deletions);
     println!(
-        "{}: {}",
+        "- {}: {}",
         "Modifications".fg_rgb::<255, 255, 0>(),
         modifications
     );
 
-    Ok(())
+    Ok(diff_group)
 }
