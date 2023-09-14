@@ -19,7 +19,7 @@ struct Cli {
     result: PathBuf,
 }
 
-pub fn run_cli() -> Result<()> {
+pub fn run() -> Result<()> {
     let cli = Cli::parse();
 
     let Cli {
@@ -110,7 +110,7 @@ where
     let height = tiles_old.dim().0.min(tiles_new.dim().0);
 
     let mut diff_group = Group {
-        name: format!("{} Diff", name),
+        name: format!("{name} Diff"),
         ..Default::default()
     };
 
