@@ -10,3 +10,18 @@
 A DDNet map diff tool made in Rust using [twmap](https://docs.rs/twmap).
 
 Inspired by the original Ravie's python script.
+
+```
+A DDraceNetwork map diff tool.
+
+Usage: ddnet-map-diff <MAP_OLD> <MAP_NEW> <RESULT>
+
+Arguments:
+  <MAP_OLD>  The base map to compare
+  <MAP_NEW>  The map to be compared
+  <RESULT>   The resulting map path
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+```
