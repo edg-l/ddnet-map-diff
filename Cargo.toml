@@ -1,0 +1,22 @@
+[package]
+name = "ddnet-map-diff"
+authors = ["Edgar <git@edgarluque.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-only"
+repository = "https://github.com/edg-l/ddnet-map-diff"
+categories = ["command-line-utilities"]
+keywords = ["ddnet", "teeworlds", "diff", "map"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.1.8", features = ["cargo", "derive"] }
+color-eyre = "0.6.2"
+eyre = "0.6.8"
+fixed = "1.23.0"
+itertools = "0.11"
+ndarray = "0.15.6"
+owo-colors = "3.5.0"
+twmap = "0.10.0"
+vek = "0.15.10"
