@@ -136,8 +136,10 @@ where
 
     for x in 0..width {
         for y in 0..height {
-            let index_old = tiles_old[(y, x)].id();
-            let index_new = tiles_new[(y, x)].id();
+            let old_tile = &tiles_old[(y, x)];
+            let new_tile = &tiles_new[(y, x)];
+            let index_old = old_tile.id();
+            let index_new = new_tile.id();
 
             if index_old == 0 && index_new != 0 {
                 tiles_add[(y, x)].id = 1;
@@ -148,6 +150,12 @@ where
             } else if index_old != index_new {
                 tiles_mod[(y, x)].id = 1;
                 modifications += 1;
+            } else {
+                // check if a tile state changed, like rotation
+                if old_tile.flags() != new_tile.flags() {
+                    tiles_mod[(y, x)].id = 1;
+                    modifications += 1;
+                }
             }
         }
     }

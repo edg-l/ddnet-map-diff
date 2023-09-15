@@ -2,7 +2,7 @@
 name = "ddnet-map-diff"
 authors = ["Edgar <git@edgarluque.com>"]
 description = "A DDraceNetwork map diff tool."
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "AGPL-3.0-only"
 repository = "https://github.com/edg-l/ddnet-map-diff"
